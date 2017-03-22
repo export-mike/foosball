@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-// import styled from 'styled-components';
-import { sortBy, flow, map, filter } from 'lodash/fp';
+import React, {Component} from 'react';
+import {sortBy, flow, map, filter} from 'lodash/fp';
 
 const ONE_VS_ONE_LEAGUE = 'ONE_VS_ONE_LEAGUE';
 const TWO_VS_TWO_LEAGUE = 'TWO_VS_TWO_LEAGUE';
@@ -10,9 +9,7 @@ const CHAMPIONS = 'CHAMPIONS';
 
 const noop = n => n;
 const filterByTeam = noop;
-const filterByChampions = flow(
-  getWinners()
-);
+const filterByChampions = flow(getWinners());
 const filterByIndividuals = noop;
 const filterByScorers = noop;
 
@@ -21,18 +18,19 @@ const filters = {
   [ONE_VS_TWO_LEAGUE]: filterByTeam,
   [TWO_VS_TWO_LEAGUE]: filterByTeam,
   [CHAMPIONS]: filterByChampions,
-  [INDIVIDUAL_SCORERS]: filterByScorers
+  [INDIVIDUAL_SCORERS]: filterByScorers,
 };
 
 export default class LeaderBoard extends Component {
-  handleFilter = filter => e => {
-    e.preventDefault();
+  handleFilter = filter =>
+    e => {
+      e.preventDefault();
 
-    this.setState({
-      filter,
-      table: filters[filter](this.props.results)
-    });
-  }
+      this.setState({
+        filter,
+        table: filters[filter](this.props.results),
+      });
+    };
   render() {
     return (
       <div>
@@ -48,21 +46,10 @@ export default class LeaderBoard extends Component {
           </button>
         </div>
 
-        {
-          this.state.filter === CHAMPIONS &&
-          <h2> Showing Top of the Top </h2>
-        }
-        {
-          this.state.filter === ONE_VS_ONE_LEAGUE &&
-          <h2> Showing Top Individuals </h2>
-        }
-        {
-          this.state.filter === TWO_VS_TWO_LEAGUE &&
-          <h2> Showing Top Teams </h2>
-        }
-        {
-          this.state.filter === INDIVIDUAL_SCORERS &&
-          <h2> Showing Top Teams </h2>}
+        {this.state.filter === CHAMPIONS && <h2> Showing Top of the Top </h2>}
+        {this.state.filter === ONE_VS_ONE_LEAGUE && <h2> Showing Top Individuals </h2>}
+        {this.state.filter === TWO_VS_TWO_LEAGUE && <h2> Showing Top Teams </h2>}
+        {this.state.filter === INDIVIDUAL_SCORERS && <h2> Showing Top Teams </h2>}
       </div>
     );
   }
