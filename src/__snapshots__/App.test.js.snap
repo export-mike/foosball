@@ -1,0 +1,156 @@
+exports[`test renders init correctly 1`] = `
+<div
+  className="koDKsA">
+  <div
+    className="eWynjK">
+     Foosball Champion Table 
+  </div>
+  <div
+    className="kaCRWp">
+    
+    <div
+      className="eMVHAg">
+      <div
+        className="fYWiEn">
+        <label
+          className="bboeeF"
+          onChange={[Function]}>
+          1vs1
+        </label>
+        <input
+          checked={true}
+          className="kaCRWp"
+          name="1vs1"
+          onChange={[Function]}
+          type="checkbox" />
+      </div>
+      <div
+        className="fYWiEn">
+        <label
+          className="bboeeF"
+          onChange={[Function]}>
+          1vs2
+        </label>
+        <input
+          checked={false}
+          className="kaCRWp"
+          name="1vs2"
+          onChange={[Function]}
+          type="checkbox" />
+      </div>
+      <div
+        className="fYWiEn">
+        <label
+          className="bboeeF"
+          onChange={[Function]}>
+          2vs2
+        </label>
+        <input
+          checked={false}
+          className="kaCRWp"
+          name="2vs2"
+          onChange={[Function]}
+          type="checkbox" />
+      </div>
+    </div>
+    <div>
+      <h2>
+         Team 1 
+        
+      </h2>
+      <input
+        className="kaCRWp"
+        onChange={[Function]}
+        placeholder="Player 1 name"
+        required={true}
+        value="" />
+    </div>
+    <div>
+      <h2>
+         Team 2 
+        
+      </h2>
+      <input
+        className="kaCRWp"
+        onChange={[Function]}
+        placeholder="Player 2 name"
+        required={true}
+        value="" />
+    </div>
+    <div>
+      <h2>
+        Final Score
+      </h2>
+      <label
+        className="bboeeF">
+         Team 1 
+      </label>
+      <input
+        className="kaCRWp"
+        onChange={[Function]}
+        required={true}
+        type="number"
+        value="" />
+      Vs
+      <input
+        className="kaCRWp"
+        onChange={[Function]}
+        required={true}
+        type="number"
+        value="" />
+      <label
+        className="bboeeF">
+         Team 2 
+      </label>
+      <button
+        className="eMVHAg"
+        onClick={[Function]}>
+         Submit Score 
+      </button>
+    </div>
+  </div>
+  <div>
+    <div>
+      <button
+        onClick={[Function]}>
+        One Vs One League Table
+      </button>
+      <button
+        onClick={[Function]}>
+        One Vs Two League Table
+      </button>
+      <button
+        onClick={[Function]}>
+        Two Vs Two League Table
+      </button>
+    </div>
+    <h2>
+       Showing One Vs One League Table 
+    </h2>
+    <table>
+      <tbody>
+        <tr>
+          <th>
+             Position 
+          </th>
+          <th>
+             Team 
+          </th>
+          <th>
+             Goals 
+          </th>
+          <th>
+             Won 
+          </th>
+          <th>
+             Lost 
+          </th>
+          <th>
+             Points 
+          </th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+`;
