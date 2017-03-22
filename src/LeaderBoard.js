@@ -1,55 +1,52 @@
 import React, {Component} from 'react';
-import {sortBy, flow, map, filter} from 'lodash/fp';
-
-const ONE_VS_ONE_LEAGUE = 'ONE_VS_ONE_LEAGUE';
-const TWO_VS_TWO_LEAGUE = 'TWO_VS_TWO_LEAGUE';
-const ONE_VS_TWO_LEAGUE = 'ONE_VS_TWO_LEAGUE';
-const INDIVIDUAL_SCORERS = 'INDIVIDUAL_SCORERS';
-const CHAMPIONS = 'CHAMPIONS';
-
-const noop = n => n;
-const filterByTeam = noop;
-const filterByChampions = flow(getWinners());
-const filterByIndividuals = noop;
-const filterByScorers = noop;
-
-const filters = {
-  [ONE_VS_ONE_LEAGUE]: filterByIndividuals,
-  [ONE_VS_TWO_LEAGUE]: filterByTeam,
-  [TWO_VS_TWO_LEAGUE]: filterByTeam,
-  [CHAMPIONS]: filterByChampions,
-  [INDIVIDUAL_SCORERS]: filterByScorers,
-};
+import {ONE_VS_ONE, ONE_VS_TWO, TWO_VS_TWO} from './constants';
 
 export default class LeaderBoard extends Component {
+  state = {filter: ONE_VS_ONE};
+
   handleFilter = filter =>
     e => {
       e.preventDefault();
 
       this.setState({
         filter,
-        table: filters[filter](this.props.results),
       });
     };
   render() {
     return (
       <div>
         <div>
-          <button onClick={this.handleFilter(ONE_VS_ONE_LEAGUE)}>
-            Top Individuals
+          <button onClick={this.handleFilter(ONE_VS_ONE)}>
+            One Vs One League Table
           </button>
-          <button onClick={this.handleFilter(TWO_VS_TWO_LEAGUE)}>
-            Top Teams
+          <button onClick={this.handleFilter(ONE_VS_TWO)}>
+            One Vs Two League Table
           </button>
-          <button onClick={this.handleFilter(INDIVIDUAL_SCORERS)}>
-            Top Scorers
+          <button onClick={this.handleFilter(TWO_VS_TWO)}>
+            Two Vs Two League Table
           </button>
         </div>
-
-        {this.state.filter === CHAMPIONS && <h2> Showing Top of the Top </h2>}
-        {this.state.filter === ONE_VS_ONE_LEAGUE && <h2> Showing Top Individuals </h2>}
-        {this.state.filter === TWO_VS_TWO_LEAGUE && <h2> Showing Top Teams </h2>}
-        {this.state.filter === INDIVIDUAL_SCORERS && <h2> Showing Top Teams </h2>}
+        {this.state.filter === ONE_VS_ONE && <h2> Showing One Vs One League Table </h2>}
+        {this.state.filter === ONE_VS_TWO && <h2> Showing One Vs Two League Table </h2>}
+        {this.state.filter === TWO_VS_TWO && <h2> Showing Two Vs Two League Table </h2>}
+        <table>
+          <tbody>
+            <tr>
+              <th> Position </th>
+              <th> Team </th>
+              <th> Points </th>
+              <th> Goals </th>
+            </tr>
+            {this.props.leagues[this.state.filter].map((r, i) => (
+              <tr key={r.team}>
+                <td> {i + 1} </td>
+                <td> {r.team} </td>
+                <td> {r.goals} </td>
+                <td> {r.points} </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }

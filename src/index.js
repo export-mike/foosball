@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import colors from './colors';
-import { injectGlobal } from 'styled-components';
+import {injectGlobal} from 'styled-components';
 /* eslint-disable */
 injectGlobal`
   body, html, #root {
@@ -20,6 +20,5 @@ injectGlobal`
   }
 `;
 /* eslint-enable */
-
 
 ReactDOM.render(<App />, document.getElementById('root'));

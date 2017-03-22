@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
 import withHandlers from 'recompose/withHandlers';
-import {TEAM1, DRAW, TEAM2, ONE_VS_ONE, matchTypes} from './constants';
+import {TEAM1, DRAW, TEAM2, ONE_VS_ONE, ONE_VS_TWO, TWO_VS_TWO, matchTypes} from './constants';
 import {updateLeague, getLeagues} from './league';
+import LeaderBoard from './LeaderBoard';
 
 const AppWrapper = styled.div`
   display: flex;
@@ -50,7 +51,7 @@ const Checkbox = props => <Input type="checkbox" {...props} />;
 const Input = styled.input`
   padding: 2em;
 `;
-const Report = styled.div`
+const Report = styled.form`
   padding: 2em;
 `;
 const MatchTypes = styled.div`
@@ -195,6 +196,7 @@ class MatchReport extends React.Component {
           {Array.from(Array(this.state.matchType.team1).keys()).map(k => (
             <TextInput
               key={`team1_${k}`}
+              required
               placeholder={`Player ${k + 1} name`}
               value={this.state.team1[k]}
               onChange={this.handleTeamMemberChange('team1', k)}
@@ -206,6 +208,7 @@ class MatchReport extends React.Component {
           {Array.from(Array(this.state.matchType.team2).keys()).map(k => (
             <TextInput
               key={`team2_${k}`}
+              required
               placeholder={`Player ${this.state.matchType.team1 + k + 1} name`}
               value={this.state.team2[k]}
               onChange={this.handleTeamMemberChange('team2', k)}
@@ -215,9 +218,19 @@ class MatchReport extends React.Component {
         <div>
           <h2>Final Score</h2>
           <Label> Team 1 </Label>
-          <TextInput value={this.state.team1.goals} onChange={this.handleScoreChange('team1')} />
+          <TextInput
+            type="number"
+            required
+            value={this.state.team1.goals}
+            onChange={this.handleScoreChange('team1')}
+          />
           Vs
-          <TextInput value={this.state.team2.goals} onChange={this.handleScoreChange('team2')} />
+          <TextInput
+            type="number"
+            required
+            value={this.state.team2.goals}
+            onChange={this.handleScoreChange('team2')}
+          />
           <Label> Team 2 </Label>
           <Button onClick={this.handleSubmit}> Submit Score </Button>
         </div>
@@ -226,13 +239,16 @@ class MatchReport extends React.Component {
   }
 }
 
-// const sortScoreByIds = flow(
-//   map(n => parseInt(n)),
-//   sortBy(n => n),
-// );
-
 class App extends Component {
-  state = {scores: {}, error: null};
+  state = {
+    leagues: {
+      [ONE_VS_ONE]: [],
+      [ONE_VS_TWO]: [],
+      [TWO_VS_TWO]: [],
+    },
+    error: null,
+  };
+
   componentDidMount() {
     getLeagues().then(this.handleScoreChange).catch(e => {
       this.setState({
@@ -241,7 +257,6 @@ class App extends Component {
     });
   }
   handleScoreChange = leagues => {
-    console.log(leagues);
     this.setState({
       ...this.state,
       leagues,
@@ -262,8 +277,7 @@ class App extends Component {
       <AppWrapper>
         <Heading> Foosball Champion Table </Heading>
         <MatchReport onScoreChange={this.handleScoreChange} />
-        {/* <LeaderBoard /> */}
-        {JSON.stringify(this.state.leagues)}
+        <LeaderBoard leagues={this.state.leagues} />
       </AppWrapper>
     );
   }

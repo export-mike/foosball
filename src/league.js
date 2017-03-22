@@ -1,19 +1,20 @@
 import Promise from 'promise-polyfill';
 import localforage from 'localforage';
 import {ONE_VS_ONE, ONE_VS_TWO, TWO_VS_TWO} from './constants';
+import {orderBy, flow} from 'lodash/fp';
 
 const getLeague = leagueId =>
-  localforage.getItem(leagueId).then(leagueResults => !leagueResults ? {} : leagueResults);
+  localforage.getItem(leagueId).then(leagueResults => !leagueResults ? [] : leagueResults);
 
 const getNewLeaguePosition = (currentPos, newPos) => {
   const {teamName, points, goals} = newPos;
   const currentPoints = (currentPos && currentPos.points) || 0;
-  const currentGoals = (currentPos  && currentPos.goals) || 0;
+  const currentGoals = (currentPos && currentPos.goals) || 0;
 
   return {
     team: teamName,
     points: currentPoints + points,
-    goals: currentGoals + goals
+    goals: currentGoals + goals,
   };
 };
 
@@ -34,25 +35,35 @@ const addResultToLeague = result =>
     };
   };
 
-const saveUpdatedLeague = leagueId => leagueTable =>
-  localforage.setItem(leagueId, leagueTable);
+const orderByPoints = flow(orderBy(team => team.points, 'desc'));
+
+const toArray = map => Object.keys(map).reduce((acc, k) => [...acc, map[k]], []);
+
+const toMap = array => array.reduce((acc, k) => ({...acc, [k]: array[k]}), {});
+
+const saveUpdatedLeague = leagueId =>
+  leagueTable => localforage.setItem(leagueId, orderByPoints(toArray(leagueTable)));
 
 export const updateLeague = result =>
   getLeague(result.matchTypeId)
-  .then(addResultToLeague(result))
-  .then(saveUpdatedLeague(result.matchTypeId))
+    .then(table => {
+      const tableMap = {};
+      table.forEach(r => {
+        tableMap[r.team] = r;
+      });
+      return tableMap;
+    })
+    .then(addResultToLeague(result))
+    .then(saveUpdatedLeague(result.matchTypeId));
 
 export const getLeagues = () =>
-  Promise.all([
-    getLeague(ONE_VS_ONE),
-    getLeague(ONE_VS_TWO),
-    getLeague(TWO_VS_TWO)
-  ]).then(([
-    OneVsOne,
-    OneVsTwo,
-    TwoVsTwo,
-  ]) => ({
-    ONE_VS_ONE: OneVsOne,
-    ONE_VS_TWO: OneVsTwo,
-    TWO_VS_TWO: TwoVsTwo,
-  }));
+  Promise.all([getLeague(ONE_VS_ONE), getLeague(ONE_VS_TWO), getLeague(TWO_VS_TWO)])
+    .then(([OneVsOne, OneVsTwo, TwoVsTwo]) => ({
+      [ONE_VS_ONE]: OneVsOne,
+      [ONE_VS_TWO]: OneVsTwo,
+      [TWO_VS_TWO]: TwoVsTwo,
+    }))
+    .then(a => {
+      console.log(a);
+      return a;
+    });
