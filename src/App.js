@@ -3,6 +3,16 @@ import styled, { injectGlobal } from 'styled-components';
 import withHandlers from 'recompose/withHandlers';
 import localforage from 'localforage';
 import { sortBy, flow, map } from 'lodash/fp';
+import { TEAM1, DRAW, TEAM2,
+ONE_VS_ONE,
+ONE_VS_TWO,
+TWO_VS_TWO,
+matchTypes
+} from './constants';
+
+// import LeaderBoard from './LeaderBoard';
+import { updateLeague, getLeagues } from './league';
+// import { addNewResult } from './results';
 
 const colors = {
   hazel: '#DFD7CC',
@@ -85,54 +95,49 @@ const Button = styled.button`
   display: flex;
 `;
 
-
-const OneVsOne = '1vs1';
-const OneVsTwo = '1vs2';
-const TwoVsTwo = '2vs2';
-const matchTypes = {
-  [OneVsOne]: {
-    OneVsOne,
-    team1: 1,
-    team2: 1
-  },
-  [OneVsTwo]: {
-    OneVsTwo,
-    team1: 1,
-    team2: 2
-  },
-  [TwoVsTwo]: {
-    TwoVsTwo,
-    team1: 2,
-    team2: 2
-  }
-};
-
 let TextInput = props => <Input {...props} value={props.value}/>
 TextInput = withHandlers({
   onChange: props => e => props.onChange(e.target.value)
 })(TextInput);
 
 const SAVE_TIMEOUT = 5000;
-const getScores = () =>
-    localforage.getItem('scores')
-    .then((scores = {}) => scores);
-
-const addNewScore = score => scores => {
-  console.log(scores);
-  return localforage.setItem('scores', {
-    ...scores,
-    [Date.now().toString()]: score
-  });
-};
 
 const initialState = {
-  matchType: matchTypes[OneVsOne],
-  matchTypeId: OneVsOne,
-  team1: { 0: '', 1: '', goals: '' },
-  team2: { 0: '', 1: '', goals: '' },
+  matchType: matchTypes[ONE_VS_ONE],
+  matchTypeId: ONE_VS_ONE,
+  team1: { 0: '', 1: '', goals: '', teamName: '' },
+  team2: { 0: '', 1: '', goals: '', teamName: '' },
   saved: false,
   error: false,
   score: '',
+  winner: undefined,
+};
+
+const getWinner = result => {
+  if (result.team1.goals > result.team2.goals) {
+    return TEAM1;
+  }
+  if (result.team2.goals > result.team1.goals) {
+    return TEAM2;
+  }
+  if (result.team1.goals === result.team2.goals) {
+    return DRAW;
+  }
+}
+
+const getPoints = (winner, team) => {
+  if (winner === team) return 3;
+  if (winner === DRAW) return 1;
+  return 0;
+}
+
+const getTeamName = (team, playerId, name) => {
+    const teamUpdated = {
+      ...team,
+      [playerId]: name,
+    };
+
+    return `${teamUpdated[0]}${teamUpdated[1] && ' & '}${teamUpdated[1] && teamUpdated[1]}`; // eslint-disable-line
 };
 
 class MatchReport extends React.Component {
@@ -151,7 +156,8 @@ class MatchReport extends React.Component {
       ...this.state,
       [team]: {
         ...this.state[team],
-        [member]: name
+        [member]: name,
+        teamName: getTeamName(this.state[team], member, name),
       }
     })
   }
@@ -164,24 +170,36 @@ class MatchReport extends React.Component {
             goals
           }
       };
+      const winner = getWinner(intermediateState);
       const newState = {
         ...intermediateState,
         score: `${intermediateState.team1.goals} - ${intermediateState.team2.goals}`, // eslint-disable-line
+        winner,
+        team1: {
+          ...intermediateState.team1,
+          points: getPoints(winner, TEAM1),
+        },
+        team2: {
+          ...intermediateState.team2,
+          points: getPoints(winner, TEAM2),
+        }
       }
 
       this.setState(newState);
   }
 
   handleSubmit = () => {
-    getScores()
-    .then(addNewScore(this.state))
-    .then(getScores)
-    .then(scores => {
-      this.props.onScoreChange(scores);
+    Promise.all([
+      updateLeague(this.state)
+    ])
+    .then(getLeagues)
+    .then((leagueTables) => {
+      this.props.onScoreChange(leagueTables);
       this.setState({ ...initialState, saved: true });
       setTimeout(() => {
         this.setState({ ...this.state, saved: false });
       }, SAVE_TIMEOUT);
+
     })
     .catch(e => {
       this.setState({ ...this.state, error: true });
@@ -206,7 +224,7 @@ class MatchReport extends React.Component {
         }
       </MatchTypes>
       <div>
-        <h2> Team 1 </h2>
+        <h2> Team 1 {this.state.team1.teamName && `(${this.state.team1.teamName})`}</h2>
         {
           Array.from(Array(this.state.matchType.team1).keys())
           .map(k => <TextInput
@@ -218,7 +236,7 @@ class MatchReport extends React.Component {
         }
       </div>
       <div>
-        <h2> Team 2 </h2>
+        <h2> Team 2 {this.state.team2.teamName && `(${this.state.team2.teamName})`}</h2>
         {
           Array.from(Array(this.state.matchType.team2).keys())
           .map(k => <TextInput
@@ -250,31 +268,46 @@ class MatchReport extends React.Component {
   }
 }
 
-const sortScoreByIds = flow(
-  map(n => parseInt(n)),
-  sortBy(n => n),
-);
+// const sortScoreByIds = flow(
+//   map(n => parseInt(n)),
+//   sortBy(n => n),
+// );
+
 class App extends Component {
-  state = { scores: {}, idsSortedByDate: [] };
+  state = { scores: {}, idsSortedByDate: [], error: null };
   componentDidMount() {
-    getScores()
-    .then(this.handleScoreChange);
+    getLeagues()
+    .then(this.handleScoreChange)
+    .catch(e => {
+      this.setState({
+        error: e,
+      });
+    })
   }
-  handleScoreChange = scores => {
+  handleScoreChange = leagues => {
     this.setState({
       ...this.state,
-      scores,
-      idsSortedByDate: sortScoreByIds(Object.keys(scores))
+      leagues,
+      // idsSortedByDate: sortScoreByIds(Object.keys(scores))
     });
   }
   render() {
     console.log(this.state.idsSortedByDate)
+    if (this.state.error) {
+      return (
+        <AppWrapper>
+          <Heading> Foosball Champion Table </Heading>
+          <h2> Currently Unavailable :( </h2>
+          {this.state.error.message}
+          {this.state.error.stack}
+        </AppWrapper>
+      )
+    }
     return (
       <AppWrapper>
         <Heading> Foosball Champion Table </Heading>
         <MatchReport onScoreChange={this.handleScoreChange}/>
-        { JSON.stringify(this.state.idsSortedByDate)}
-        {/* { JSON.stringify(this.state.scores) } */}
+        {/* <LeaderBoard /> */}
       </AppWrapper>
     );
   }

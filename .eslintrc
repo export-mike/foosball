@@ -1,14 +1,13 @@
 {
   "parser": "babel-eslint",
   "extends": [
-    "prettier",
-    "prettier/react"
+    "react-app"
   ],
   "rules": {
     "valid-jsdoc": 0,
     "max-len": [
       2,
-      80
+      100
     ]
   }
 }
