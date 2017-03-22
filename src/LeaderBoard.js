@@ -34,14 +34,18 @@ export default class LeaderBoard extends Component {
             <tr>
               <th> Position </th>
               <th> Team </th>
-              <th> Points </th>
               <th> Goals </th>
+              <th> Won </th>
+              <th> Lost </th>
+              <th> Points </th>
             </tr>
             {this.props.leagues[this.state.filter].map((r, i) => (
               <tr key={r.team}>
                 <td> {i + 1} </td>
                 <td> {r.team} </td>
                 <td> {r.goals} </td>
+                <td> {r.won} </td>
+                <td> {r.lost} </td>
                 <td> {r.points} </td>
               </tr>
             ))}

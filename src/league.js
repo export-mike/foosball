@@ -7,14 +7,18 @@ const getLeague = leagueId =>
   localforage.getItem(leagueId).then(leagueResults => !leagueResults ? [] : leagueResults);
 
 const getNewLeaguePosition = (currentPos, newPos) => {
-  const {teamName, points, goals} = newPos;
+  const { teamName, points, goals, won } = newPos;
   const currentPoints = (currentPos && currentPos.points) || 0;
   const currentGoals = (currentPos && currentPos.goals) || 0;
+  const currentWins = (currentPos && currentPos.won) || 0;
+  const currentLost = (currentPos && currentPos.lost) || 0;
 
   return {
     team: teamName,
     points: currentPoints + points,
     goals: currentGoals + goals,
+    won: won ? currentWins + 1 : currentWins,
+    lost: !won ? currentLost + 1 : currentLost,
   };
 };
 
@@ -38,8 +42,6 @@ const addResultToLeague = result =>
 const orderByPoints = flow(orderBy(team => team.points, 'desc'));
 
 const toArray = map => Object.keys(map).reduce((acc, k) => [...acc, map[k]], []);
-
-const toMap = array => array.reduce((acc, k) => ({...acc, [k]: array[k]}), {});
 
 const saveUpdatedLeague = leagueId =>
   leagueTable => localforage.setItem(leagueId, orderByPoints(toArray(leagueTable)));
