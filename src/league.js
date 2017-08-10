@@ -1,7 +1,7 @@
 import Promise from 'promise-polyfill';
 import localforage from 'localforage';
 import {ONE_VS_ONE, ONE_VS_TWO, TWO_VS_TWO} from './constants';
-import {orderBy, flow} from 'lodash/fp';
+import {orderBy, flow, reduce} from 'lodash/fp';
 
 const getLeague = leagueId =>
   localforage.getItem(leagueId).then(leagueResults => !leagueResults ? [] : leagueResults);
@@ -46,15 +46,11 @@ const toArray = map => Object.keys(map).reduce((acc, k) => [...acc, map[k]], [])
 const saveUpdatedLeague = leagueId =>
   leagueTable => localforage.setItem(leagueId, orderByPoints(toArray(leagueTable)));
 
+const toMap = reduce((acc, t) => ({...acc, [t.name]: t}), {});
+
 export const updateLeague = result =>
   getLeague(result.matchTypeId)
-    .then(table => {
-      const tableMap = {};
-      table.forEach(r => {
-        tableMap[r.team] = r;
-      });
-      return tableMap;
-    })
+    .then(toMap)
     .then(addResultToLeague(result))
     .then(saveUpdatedLeague(result.matchTypeId));
 
